@@ -5,8 +5,8 @@ import java.util.Scanner;
 
 public class Student
 {
-    private String studentCode, studentName, address;
-    private int studentAge, phone;
+    private String studentName, address;
+    private int studentAge, phone, studentCode;
     private boolean sex;
 
     public Student(int studentCode, String studentName, String address, int studentAge, int phone, boolean sex)
@@ -23,7 +23,7 @@ public class Student
     {
     }
 
-    public String getStudentCode()
+    public int getStudentCode()
     {
         return studentCode;
     }
@@ -59,7 +59,7 @@ public class Student
         System.out.println("Nhập tên học sinh");
         this.studentName = scanner.nextLine();
         System.out.println("Nhập mã học sinh");
-        this.studentCode = scanner.nextLine();
+        this.studentCode = Integer.parseInt(scanner.nextLine());
         System.out.println("Nhập tuổi học sinh");
         this.studentAge = Integer.parseInt(scanner.nextLine());
         System.out.println("Nhập giới tính học sinh (true = nam, false = nữ)");
@@ -82,6 +82,7 @@ public class Student
 
 class MainStudent
 {
+    private static int studentCount = 10;
     public static void main(String[] args)
     {
         Scanner scanner = new Scanner(System.in);
@@ -89,12 +90,19 @@ class MainStudent
         Random random = new Random();
         for (int i = 0; i < 10; i++)
         {
-            students[i] = new Student(i, "Học sinh " + i,
+            students[i] = new Student(random.nextInt(1000), "Học sinh " + i,
                     "Địa chỉ số " + i,
                     random.nextInt(18, 24),
                     i + i, random.nextInt(2) == 1);
         }
-        int studentCount = 10;
+        System.out.println("Initial data");
+        for(Student student: students)
+        {
+            if(student == null)
+                break;
+            student.displayData();
+            System.out.println("======================");
+        }
         while(true)
         {
             System.out.println("===========Menu==============");
@@ -102,6 +110,8 @@ class MainStudent
             System.out.println("2. Thêm mới học sinh");
             System.out.println("3. Sửa thông tin dựa vào mã học sinh");
             System.out.println("4. Xóa học sinh");
+            System.out.println("5. Sắp xếp sinh viên theo id giảm dần");
+            System.out.println("6. Tìm kiếm sinh viên với tuổi nhập vào");
             System.out.println("0. Thoát");
             System.out.println("Nhập lựa chọn");
             int choice = Integer.parseInt(scanner.nextLine());
@@ -111,7 +121,7 @@ class MainStudent
                     for(int i = 0; i < students.length; i++)
                     {
                         if(students[i] == null)
-                            return;
+                            break;
                         students[i].displayData();
                     }
                     break;
@@ -123,10 +133,10 @@ class MainStudent
                     break;
                 case 3:
                     System.out.println("Nhập mã học sinh");
-                    String id = scanner.nextLine();
+                    int id = Integer.parseInt(scanner.nextLine());
                     for(int i = 0; i < students.length; i++)
                     {
-                        if(id.equals(students[i].getStudentCode()))
+                        if(id == students[i].getStudentCode())
                         {
                             System.out.println("Mời nhập thông tin mới");
                             students[i].inputData();
@@ -137,13 +147,40 @@ class MainStudent
                     break;
                 case 4:
                     System.out.println("Nhập mã học sinh");
-                    String code = scanner.nextLine();
-                    for(int i = 0; i < students.length; i++)
+                    int code = Integer.parseInt(scanner.nextLine());
+                    for(int i = 0; i < studentCount; i++)
                     {
-                        if(code.equals(students[i].getStudentCode()))
+                        if(code == students[i].getStudentCode())
                         {
                             students[i] = null;
+                            for(int j = i; j < studentCount; j++)
+                            {
+                                students[j] = students[j+1];
+                            }
+                            studentCount--;
                             break;
+                        }
+                    }
+                    break;
+                case 5:
+                    QuickSort(students, 0, studentCount-1);
+                    for(Student student : students)
+                    {
+                        if(student == null)
+                            break;
+                        student.displayData();
+                        System.out.println("----------------");
+                    }
+                    break;
+                case 6:
+                    System.out.println("Nhập mã học sinh");
+                    int searchAge = Integer.parseInt(scanner.nextLine());
+                    for(int i = 0; i < studentCount; i++)
+                    {
+                        if (searchAge == students[i].getStudentAge())
+                        {
+                            System.out.println("Tìm thấy học sinh có tuổi đạt yêu cầu");
+                            students[i].displayData();
                         }
                     }
                     break;
@@ -155,5 +192,42 @@ class MainStudent
                     break;
             }
         }
+    }
+    public static void QuickSort(Student[] students, int low, int high)
+    {
+        if(low < high)
+        {
+            int j = Parition(students, low, high);
+            MainStudent.QuickSort(students, low, j);
+            MainStudent.QuickSort(students,j+1, high);
+        }
+    }
+    public static int Parition(Student[] students, int low, int high)
+    {
+        Student pivot = students[low];
+        int i = low; int j = high;
+        while (i < j)//Chưa xử lý được trường hợp
+        {//pivot.studentCode quá lớn nên i hoặc j trở nên quá lớn hoặc quá nhỏ => null pointer
+//            if(i > studentCount || j < 0) //Không được
+//                break;
+           while (students[i].getStudentCode() >= pivot.getStudentCode())
+           {
+               i++;
+           }
+           while (students[j].getStudentCode() < pivot.getStudentCode())
+           {
+               j--;
+           }
+           if(i < j)
+           {
+               Student temp = students[i];
+               students[i] = students[j];
+               students[j] = temp;
+           }
+        }
+        Student tempStudent = students[low];
+        students[low] = students[j];
+        students[j] = tempStudent;
+        return j;
     }
 }
